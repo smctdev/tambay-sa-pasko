@@ -144,8 +144,7 @@ export default function Admin() {
       const { rows, skipped } = parseMatrix(matrix);
       setPending(rows);
       setPreview(rows.length
-        ? `Ready: ${rows.length} guests${skipped ? ` (${skipped} incomplete rows skipped)` : ""}. Sample: ` +
-          rows.slice(0, 3).map((r) => `${r.name} → Table ${r.table_number}${r.seat_number ? ", Chair " + r.seat_number : ""}`).join("  |  ")
+        ? `Ready: ${rows.length} guests${skipped ? ` (${skipped} incomplete rows skipped)` : ""} ` 
         : "No valid rows found. Need columns: Name, Table.");
     } catch (err) { setPreview("Couldn't read that file: " + err.message); }
   }
@@ -230,7 +229,6 @@ export default function Admin() {
           <div className="stats">
             <div className="stat"><b>{stats.guests}</b><span>Guests</span></div>
             <div className="stat"><b>{stats.tables}</b><span>Tables</span></div>
-            <div className="stat"><b>{stats.big}</b><span>Biggest table</span></div>
           </div>
 
           <section className="panel">

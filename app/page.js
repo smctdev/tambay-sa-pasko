@@ -56,7 +56,7 @@ export default function Home() {
   }, [picked]);
 
   const reset = () => { setQ(""); setResults(null); setPicked(null); input.current?.focus(); };
-  const tape = ["SMCT Presents", "Tambay sa Pasko", "Christmas Party 2026", "Lingaw ta", "Walay stress", "Tambay lang"];
+  const tape = ["SMCT Presents", "Tambay sa Pasko", "SMCT Christmas Party 2026", "Lingaw ta", "Walay stress", "Tambay lang"];
 
   return (
     <>
@@ -82,7 +82,7 @@ export default function Home() {
         <h1 className="title">TAMBAY<span className="t2">SA PASKO</span></h1>
         <p className="subtitle-tag"><b>CHRISTMAS PARTY</b><i>2026</i></p>
 
-        <div className="round-sticker" aria-hidden="true">NICE LIST<br />✔<br />NAKIT-AN</div>
+        {/* <div className="round-sticker" aria-hidden="true">NICE LIST<br />✔<br />NAKIT-AN</div> */}
 
         <svg className="sticker sneaker" viewBox="0 0 260 150" aria-hidden="true">
           <path d="M12 104 C12 70 30 52 52 50 L82 24 C92 14 108 14 118 26 L132 46 C150 56 196 60 232 82 C248 92 250 112 240 122 L22 122 C14 122 12 114 12 104Z" fill="#b3141f" stroke="#0d0d0d" strokeWidth="6" strokeLinejoin="round" />
@@ -153,7 +153,7 @@ export default function Home() {
 
       <footer className="closing">
         <p>LINGAW TA! <span>TAMBAY LANG</span> SA PASKO! 🎄</p>
-        <small>SMCT CHRISTMAS PARTY 2026</small>
+        <small>SMCT CHRISTMAS PARTY 2026 • December 18, 2026 • 6:00 PM• Sacred Heart Village, J.A. Clarin St., Cogon District, Tagbilaran City</small>
       </footer>
     </>
   );
