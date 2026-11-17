@@ -8,7 +8,10 @@ services:
     ports:
       - "9999:9999"
     environment:
-      DATABASE_URL: mysql://smct:smct@h192.168.1.150/tambay-sa-pasko
-      DATABASE_SSL: "false"
-      ADMIN_PASSWORD: smct123456
-      ADMIN_SESSION_SECRET: taas-nga-random-nga-text-32-ka-characters-pataas
+          DB_CONNECTION: mysql
+          DB_HOST: 172.17.0.1
+          DB_PORT: 3306
+          DB_DATABASE: 
+          DB_USERNAME: smct
+          DB_PASSWORD: smct
+          
