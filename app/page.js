@@ -98,7 +98,7 @@ export default function Home() {
         <section className="street-sign" aria-labelledby="q">
           <p className="small">Guest Seating • Street Directory</p>
           <h2 className="big-q" id="q">ASA IMONG <em>TAMBAY?</em></h2>
-          <p className="lead">Scan the QR code, search your name, and find your table!</p>
+          <p className="lead">Search your name, and find your table!</p>
         </section>
 
         <div className="search-wrap">
@@ -141,7 +141,6 @@ export default function Home() {
 
           {picked && (
             <div className="reveal" ref={revealRef}>
-              <div className="uy">UY! NAKIT-AN RA GYUD KA! 🔥</div>
               <div className="guest-name">{picked.name}</div>
               <div className="spot-label">YOUR TAMBAY SPOT</div>
               <div className="table-no">{formatTable(picked.table_number)}</div>
