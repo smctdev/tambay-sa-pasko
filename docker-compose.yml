@@ -1,0 +1,9 @@
+version: '3.8'
+
+services:
+  tambay-pasko:
+    build: .
+    container_name: tambay-pasko
+    restart: unless-stopped
+    ports:
+      - "9999:9999"
