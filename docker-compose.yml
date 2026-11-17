@@ -7,5 +7,8 @@ services:
     restart: unless-stopped
     ports:
       - "9999:9999"
-    env_file:
-      - .env
+    environment:
+      DATABASE_URL: mysql://smct:smct@h192.168.1.150/tambay-sa-pasko
+      DATABASE_SSL: "false"
+      ADMIN_PASSWORD: imong-admin-password
+      ADMIN_SESSION_SECRET: taas-nga-random-nga-text-32-ka-characters-pataas
