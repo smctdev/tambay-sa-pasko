@@ -9,7 +9,7 @@ export async function GET() {
   if (!isAdmin()) return unauthorized();
   try {
     const pool = await db();
-    const [rows] = await pool.query("SELECT id, name, table_number FROM guests ORDER BY name");
+    const [rows] = await pool.query("SELECT id, name, table_number, seat_number FROM guests ORDER BY name");
     return Response.json({ guests: rows });
   } catch (e) {
     console.error(e);
@@ -20,11 +20,11 @@ export async function GET() {
 export async function POST(req) {
   if (!isAdmin()) return unauthorized();
   const b = await req.json().catch(() => ({}));
-  const name = clean(b.name, 255), table = clean(b.table_number, 50);
+  const name = clean(b.name, 255), table = clean(b.table_number, 50), seat = clean(b.seat_number, 20) || null;
   if (!name || !table) return Response.json({ error: "Name and table are required" }, { status: 400 });
   try {
     const pool = await db();
-    const [r] = await pool.query("INSERT INTO guests (name, table_number) VALUES (?, ?)", [name, table]);
+    const [r] = await pool.query("INSERT INTO guests (name, table_number, seat_number) VALUES (?, ?, ?)", [name, table, seat]);
     return Response.json({ id: r.insertId });
   } catch (e) {
     console.error(e);

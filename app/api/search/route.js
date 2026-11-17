@@ -14,7 +14,7 @@ export async function GET(req) {
     const where = tokens.map(() => "name LIKE ?").join(" AND ");
     const params = tokens.map((t) => `%${esc(t)}%`);
     const [rows] = await pool.query(
-      `SELECT name, table_number FROM guests WHERE ${where} ORDER BY name LIMIT 10`,
+      `SELECT name, table_number, seat_number FROM guests WHERE ${where} ORDER BY name LIMIT 10`,
       params
     );
     return Response.json({ results: rows });

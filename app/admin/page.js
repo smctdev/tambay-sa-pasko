@@ -4,7 +4,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 
 const NAME_KEYS = ["name", "fullname", "guest", "guestname", "employee", "employeename", "pangalan"];
-const TABLE_KEYS = ["table", "tableno", "tablenumber", "tablenum", "tbl", "no", "number", "seat", "mesa"];
+const TABLE_KEYS = ["table", "tableno", "tablenumber", "tablenum", "tbl", "mesa"];
+const SEAT_KEYS = ["seat", "seatno", "seatnumber", "chair", "chairno", "chairnumber", "upuan"];
 const norm = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, "");
 
 function parseMatrix(matrix) {
@@ -13,9 +14,10 @@ function parseMatrix(matrix) {
   const head = matrix[0].map(norm);
   let ni = head.findIndex((h) => NAME_KEYS.includes(h));
   let ti = head.findIndex((h) => TABLE_KEYS.includes(h));
+  let si = head.findIndex((h) => SEAT_KEYS.includes(h));
   let start = 1;
   if (ni === -1 || ti === -1) {
-    ni = 0; ti = 1;
+    ni = 0; ti = 1; si = matrix[0].length > 2 ? 2 : -1;
     start = /name|guest|pangalan/i.test(String(matrix[0][0])) ? 1 : 0;
   }
   const rows = []; let skipped = 0;
@@ -23,7 +25,8 @@ function parseMatrix(matrix) {
     const name = String(matrix[i][ni] ?? "").trim();
     const table_number = String(matrix[i][ti] ?? "").trim();
     if (!name || !table_number) { skipped++; continue; }
-    rows.push({ name, table_number });
+    const seat_number = si === -1 ? "" : String(matrix[i][si] ?? "").trim();
+    rows.push({ name, table_number, seat_number });
   }
   return { rows, skipped };
 }
@@ -49,6 +52,7 @@ export default function Admin() {
   const [filter, setFilter] = useState("");
   const [addName, setAddName] = useState("");
   const [addTable, setAddTable] = useState("");
+  const [addSeat, setAddSeat] = useState("");
   const [editing, setEditing] = useState(null);
   const [pending, setPending] = useState([]);
   const [preview, setPreview] = useState("");
@@ -105,14 +109,14 @@ export default function Admin() {
   async function add(e) {
     e.preventDefault();
     try {
-      await api("/api/admin/guests", { method: "POST", body: { name: addName, table_number: addTable } });
-      say("Added " + addName.trim()); setAddName(""); setAddTable(""); load();
+      await api("/api/admin/guests", { method: "POST", body: { name: addName, table_number: addTable, seat_number: addSeat } });
+      say("Added " + addName.trim()); setAddName(""); setAddTable(""); setAddSeat(""); load();
     } catch (err) { say(err.message, true); }
   }
   async function saveEdit(e) {
     e.preventDefault();
     try {
-      await api("/api/admin/guests/" + editing.id, { method: "PUT", body: { name: editing.name, table_number: editing.table_number } });
+      await api("/api/admin/guests/" + editing.id, { method: "PUT", body: { name: editing.name, table_number: editing.table_number, seat_number: editing.seat_number || "" } });
       setEditing(null); say("Saved"); load();
     } catch (err) { say(err.message, true); }
   }
@@ -141,7 +145,7 @@ export default function Admin() {
       setPending(rows);
       setPreview(rows.length
         ? `Ready: ${rows.length} guests${skipped ? ` (${skipped} incomplete rows skipped)` : ""}. Sample: ` +
-          rows.slice(0, 3).map((r) => `${r.name} → ${r.table_number}`).join("  |  ")
+          rows.slice(0, 3).map((r) => `${r.name} → Table ${r.table_number}${r.seat_number ? ", Chair " + r.seat_number : ""}`).join("  |  ")
         : "No valid rows found. Need columns: Name, Table.");
     } catch (err) { setPreview("Couldn't read that file: " + err.message); }
   }
@@ -160,7 +164,7 @@ export default function Admin() {
 
   const sortedExport = () =>
     [...guests].sort((a, b) => tblSort(a.table_number, b.table_number) || a.name.localeCompare(b.name))
-      .map((g) => ({ Name: g.name, Table: g.table_number }));
+      .map((g) => ({ Name: g.name, Table: g.table_number, Seat: g.seat_number || "" }));
   async function exportAs(kind) {
     if (!guests.length) return say("No guests to export", true);
     const XLSX = await import("xlsx");
@@ -249,13 +253,14 @@ export default function Admin() {
             <form className="field-row" onSubmit={add}>
               <div><label className="lbl" htmlFor="addName">Full name</label><input type="text" id="addName" value={addName} onChange={(e) => setAddName(e.target.value)} required placeholder="Juan Dela Cruz" /></div>
               <div><label className="lbl" htmlFor="addTable">Table number</label><input type="text" id="addTable" value={addTable} onChange={(e) => setAddTable(e.target.value)} required placeholder="8" /></div>
+              <div><label className="lbl" htmlFor="addSeat">Chair / seat no. (optional)</label><input type="text" id="addSeat" value={addSeat} onChange={(e) => setAddSeat(e.target.value)} placeholder="4" /></div>
               <button className="btn green" type="submit" style={{ alignSelf: "flex-end" }}>Add</button>
             </form>
           </section>
 
           <section className="panel">
             <h2>Import &amp; export</h2>
-            <p className="hint">Upload a <b>.csv</b> or <b>.xlsx</b> file with two columns: <b>Name</b> and <b>Table</b>. The first row should be the header.</p>
+            <p className="hint">Upload a <b>.csv</b> or <b>.xlsx</b> file with columns <b>Name</b>, <b>Table</b> and (optional) <b>Seat</b>. The first row should be the header.</p>
             <div className="drop">
               <input type="file" ref={fileRef} accept=".csv,.xlsx,.xls" onChange={onFile} />
               <div className="preview">{preview}</div>
@@ -270,7 +275,7 @@ export default function Admin() {
               )}
             </div>
             <div className="row-gap" style={{ marginTop: ".9rem" }}>
-              <button className="btn ghost small" onClick={() => download("guest-template.csv", "Name,Table\nJuan Dela Cruz,1\nMaria Santos,1\nPedro Reyes,2\n", "text/csv")}>Download CSV template</button>
+              <button className="btn ghost small" onClick={() => download("guest-template.csv", "Name,Table,Seat\nJuan Dela Cruz,1,1\nMaria Santos,1,2\nPedro Reyes,2,1\n", "text/csv")}>Download CSV template</button>
               <button className="btn ghost small" onClick={() => exportAs("csv")}>Export CSV</button>
               <button className="btn ghost small" onClick={() => exportAs("xlsx")}>Export Excel</button>
             </div>
@@ -284,12 +289,13 @@ export default function Admin() {
             </div>
             <div className="table-scroll">
               <table className="guests">
-                <thead><tr><th>Name</th><th>Table</th><th style={{ textAlign: "right" }}>Actions</th></tr></thead>
+                <thead><tr><th>Name</th><th>Table</th><th>Seat</th><th style={{ textAlign: "right" }}>Actions</th></tr></thead>
                 <tbody>
                   {shown.map((g) => (
                     <tr key={g.id}>
                       <td>{g.name}</td>
                       <td className="tbl">{g.table_number}</td>
+                      <td className="tbl">{g.seat_number || "—"}</td>
                       <td className="actions">
                         <button className="btn small ghost" onClick={() => setEditing({ ...g })}>Edit</button>
                         <button className="btn small red" onClick={() => remove(g)}>Delete</button>
@@ -309,7 +315,7 @@ export default function Admin() {
           <form className="modal" onSubmit={saveEdit}>
             <h3>Edit guest</h3>
             <div className="field-row"><div><label className="lbl" htmlFor="eN">Full name</label><input type="text" id="eN" value={editing.name} onChange={(e) => setEditing({ ...editing, name: e.target.value })} required autoFocus /></div></div>
-            <div className="field-row"><div><label className="lbl" htmlFor="eT">Table number</label><input type="text" id="eT" value={editing.table_number} onChange={(e) => setEditing({ ...editing, table_number: e.target.value })} required /></div></div>
+            <div className="field-row"><div><label className="lbl" htmlFor="eT">Table number</label><input type="text" id="eT" value={editing.table_number} onChange={(e) => setEditing({ ...editing, table_number: e.target.value })} required /></div><div><label className="lbl" htmlFor="eS">Chair / seat no.</label><input type="text" id="eS" value={editing.seat_number || ""} onChange={(e) => setEditing({ ...editing, seat_number: e.target.value })} /></div></div>
             <div className="row-gap"><button className="btn green" type="submit">Save</button><button className="btn ghost" type="button" onClick={() => setEditing(null)}>Cancel</button></div>
           </form>
         )}

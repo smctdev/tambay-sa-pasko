@@ -4,6 +4,14 @@ import { useEffect, useRef, useState } from "react";
 
 const COLORS = ["#b3141f", "#c8ff2e", "#1d4a33", "#ff4fd8", "#ebe6da"];
 
+function formatSeat(v) {
+  v = String(v ?? "").trim();
+  if (!v) return "";
+  if (/^\d+$/.test(v)) return "SEAT " + v.padStart(2, "0");
+  if (/^(chair|seat)\b/i.test(v)) return v.toUpperCase();
+  return "CHAIR " + v.toUpperCase();
+}
+
 function formatTable(v) {
   v = String(v).trim();
   if (/^\d+$/.test(v)) return "TABLE " + v.padStart(2, "0");
@@ -90,7 +98,7 @@ export default function Home() {
         <section className="street-sign" aria-labelledby="q">
           <p className="small">Guest Seating • Street Directory</p>
           <h2 className="big-q" id="q">ASA IMONG <em>TAMBAY?</em></h2>
-          <p className="lead">Search your name, and find your table!</p>
+          <p className="lead">Scan the QR code, search your name, and find your table!</p>
         </section>
 
         <div className="search-wrap">
@@ -137,6 +145,7 @@ export default function Home() {
               <div className="guest-name">{picked.name}</div>
               <div className="spot-label">YOUR TAMBAY SPOT</div>
               <div className="table-no">{formatTable(picked.table_number)}</div>
+              {picked.seat_number ? <div className="seat-no">{formatSeat(picked.seat_number)}</div> : null}
               <button className="again" type="button" onClick={reset}>← Search again</button>
             </div>
           )}

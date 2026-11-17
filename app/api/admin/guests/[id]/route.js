@@ -9,11 +9,11 @@ export async function PUT(req, { params }) {
   if (!isAdmin()) return unauthorized();
   const id = Number(params.id);
   const b = await req.json().catch(() => ({}));
-  const name = clean(b.name, 255), table = clean(b.table_number, 50);
+  const name = clean(b.name, 255), table = clean(b.table_number, 50), seat = clean(b.seat_number, 20) || null;
   if (!id || !name || !table) return Response.json({ error: "Invalid data" }, { status: 400 });
   try {
     const pool = await db();
-    await pool.query("UPDATE guests SET name = ?, table_number = ? WHERE id = ?", [name, table, id]);
+    await pool.query("UPDATE guests SET name = ?, table_number = ?, seat_number = ? WHERE id = ?", [name, table, seat, id]);
     return Response.json({ ok: true });
   } catch (e) {
     console.error(e);

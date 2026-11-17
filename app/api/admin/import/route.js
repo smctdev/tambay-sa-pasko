@@ -8,7 +8,7 @@ export async function POST(req) {
   const b = await req.json().catch(() => ({}));
   const mode = b.mode === "replace" ? "replace" : "append";
   const rows = (Array.isArray(b.rows) ? b.rows : [])
-    .map((r) => [String(r.name ?? "").trim().slice(0, 255), String(r.table_number ?? "").trim().slice(0, 50)])
+    .map((r) => [String(r.name ?? "").trim().slice(0, 255), String(r.table_number ?? "").trim().slice(0, 50), String(r.seat_number ?? "").trim().slice(0, 20) || null])
     .filter((r) => r[0] && r[1]);
   if (!rows.length) return Response.json({ error: "No valid rows" }, { status: 400 });
   if (rows.length > 5000) return Response.json({ error: "Max 5000 rows per import" }, { status: 400 });
@@ -20,7 +20,7 @@ export async function POST(req) {
     await conn.beginTransaction();
     if (mode === "replace") await conn.query("DELETE FROM guests");
     for (let i = 0; i < rows.length; i += 500) {
-      await conn.query("INSERT INTO guests (name, table_number) VALUES ?", [rows.slice(i, i + 500)]);
+      await conn.query("INSERT INTO guests (name, table_number, seat_number) VALUES ?", [rows.slice(i, i + 500)]);
     }
     await conn.commit();
     return Response.json({ imported: rows.length });
