@@ -25,6 +25,7 @@ export default function Home() {
   const [picked, setPicked] = useState(null);
   const [error, setError] = useState("");
   const [bulbs, setBulbs] = useState(10);
+  const [mates, setMates] = useState(null); // names of the other guests at the same table
   const seq = useRef(0);
   const input = useRef(null);
   const revealRef = useRef(null);
@@ -53,6 +54,18 @@ export default function Home() {
 
   useEffect(() => {
     if (picked && revealRef.current) revealRef.current.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [picked]);
+
+  // when a guest is picked, load who else sits at the same table
+  useEffect(() => {
+    setMates(null);
+    if (!picked) return;
+    let cancelled = false;
+    fetch("/api/table?table=" + encodeURIComponent(picked.table_number) + "&name=" + encodeURIComponent(picked.name))
+      .then((r) => r.json())
+      .then((d) => { if (!cancelled) setMates(Array.isArray(d.names) ? d.names : []); })
+      .catch(() => { if (!cancelled) setMates([]); });
+    return () => { cancelled = true; };
   }, [picked]);
 
   const reset = () => { setQ(""); setResults(null); setPicked(null); input.current?.focus(); };
@@ -145,6 +158,12 @@ export default function Home() {
               <div className="spot-label">YOUR TAMBAY SPOT</div>
               <div className="table-no">{formatTable(picked.table_number)}</div>
               {picked.seat_number ? <div className="seat-no">{formatSeat(picked.seat_number)}</div> : null}
+              {mates && mates.length > 0 && (
+                <div className="mates">
+                  <div className="mates-title">AT YOUR TABLE</div>
+                  <p className="mates-names">{mates.join(", ")}</p>
+                </div>
+              )}
               <button className="again" type="button" onClick={reset}>← Search again</button>
             </div>
           )}

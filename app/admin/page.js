@@ -50,6 +50,7 @@ export default function Admin() {
   const [loginErr, setLoginErr] = useState("");
   const [guests, setGuests] = useState([]);
   const [filter, setFilter] = useState("");
+  const [tableFilter, setTableFilter] = useState("");
   const [addName, setAddName] = useState("");
   const [addTable, setAddTable] = useState("");
   const [addSeat, setAddSeat] = useState("");
@@ -185,10 +186,24 @@ export default function Admin() {
     return { guests: guests.length, tables: v.length, big: v.length ? Math.max(...v) : 0 };
   }, [guests]);
 
+  const tableOptions = useMemo(() => {
+    const set = new Set(guests.map((g) => String(g.table_number).trim()));
+    return [...set].sort(tblSort);
+  }, [guests]);
+
   const shown = useMemo(() => {
     const q = filter.trim().toLowerCase();
-    return guests.filter((g) => !q || g.name.toLowerCase().includes(q) || String(g.table_number).toLowerCase().includes(q));
-  }, [guests, filter]);
+    const t = tableFilter.trim().toLowerCase();
+    return guests.filter((g) => {
+      const matchesText =
+        !q ||
+        g.name.toLowerCase().includes(q) ||
+        String(g.table_number).toLowerCase().includes(q);
+      const matchesTable =
+        !t || String(g.table_number).trim().toLowerCase() === t;
+      return matchesText && matchesTable;
+    });
+  }, [guests, filter, tableFilter]);
 
   const tape = ["SMCT Admin", "Tambay sa Pasko 2026", "Guest list control"];
 
@@ -282,7 +297,32 @@ export default function Admin() {
           <section className="panel">
             <h2>Guest list</h2>
             <div className="field-row" style={{ marginBottom: ".7rem" }}>
-              <input type="search" value={filter} onChange={(e) => setFilter(e.target.value)} placeholder="Filter by name or table..." />
+              <input
+                type="search"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                placeholder="Filter by name or table..."
+              />
+              <select
+                value={tableFilter}
+                onChange={(e) => setTableFilter(e.target.value)}
+                style={{ flex: "0 0 150px" }}
+              >
+                <option value="">All tables</option>
+                {tableOptions.map((t) => (
+                  <option key={t} value={t}>Table {t}</option>
+                ))}
+              </select>
+              {tableFilter && (
+                <button
+                  className="btn ghost small"
+                  onClick={() => setTableFilter("")}
+                  style={{ flex: "0 0 auto" }}
+                  type="button"
+                >
+                  Clear
+                </button>
+              )}
               <button className="btn red small" onClick={wipe} style={{ flex: "0 0 auto" }}>Delete all</button>
             </div>
             <div className="table-scroll">
@@ -302,7 +342,13 @@ export default function Admin() {
                   ))}
                 </tbody>
               </table>
-              {shown.length === 0 && <div className="empty">No guests yet. Add one or import a file.</div>}
+              {shown.length === 0 && (
+                <div className="empty">
+                  {guests.length === 0
+                    ? "No guests yet. Add one or import a file."
+                    : "No guests match the current filter."}
+                </div>
+              )}
             </div>
           </section>
         </main>

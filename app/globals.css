@@ -297,3 +297,10 @@ td.actions { white-space: nowrap; text-align: right; display: flex; gap: .4rem; 
   font-family: var(--font-display); text-transform: uppercase; letter-spacing: .05em;
   font-size: clamp(1.8rem, 9vw, 3.4rem); line-height: 1; padding: .3rem 1rem; transform: rotate(-2deg);
 }
+/* "At your table" - plain text list on the reveal card */
+.reveal .mates { position: relative; z-index: 2; margin: 1.4rem auto 0; max-width: 440px; text-align: center; animation: pop .35s ease both; }
+.reveal .mates-title {
+  font-family: var(--font-body); font-weight: 700; text-transform: uppercase; letter-spacing: .16em; font-size: .78rem;
+  color: rgba(235, 230, 218, .78); margin-bottom: .35rem;
+}
+.reveal .mates-names { font-family: var(--font-body); font-weight: 500; font-size: 1.12rem; line-height: 1.5; color: var(--paper); overflow-wrap: anywhere; }
