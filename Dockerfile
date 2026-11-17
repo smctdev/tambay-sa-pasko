@@ -9,7 +9,7 @@ WORKDIR /app
 RUN npm install -g pnpm
 
 # Copy the package.json and package-lock.json to the working directory
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml ./
 
 RUN pnpm install
 
